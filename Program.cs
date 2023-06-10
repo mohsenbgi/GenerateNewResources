@@ -10,37 +10,37 @@ var Files = new List<string>();
 
 foreach (var d in directories1)
 {
-   Files.AddRange(Directory.GetFiles(d).Where(x => x.EndsWith(".cs") || x.EndsWith(".cshtml")));
+    Files.AddRange(Directory.GetFiles(d).Where(x => x.EndsWith(".cs") || x.EndsWith(".cshtml")));
 }
 
 List<string> GetDirectories(string path)
 {
 
-   var directories1 = new List<string>();
+    var directories1 = new List<string>();
 
-   directories1.Add(path);
+    directories1.Add(path);
 
-   var newDiectory = new List<string>();
-   newDiectory.AddRange(directories1);
+    var newDiectory = new List<string>();
+    newDiectory.AddRange(directories1);
 
-   var tempDirectory = new List<string>();
+    var tempDirectory = new List<string>();
 
-   while (true)
-   {
-       foreach (var item in newDiectory)
-       {
-           tempDirectory.AddRange(Directory.GetDirectories(item));
-       }
+    while (true)
+    {
+        foreach (var item in newDiectory)
+        {
+            tempDirectory.AddRange(Directory.GetDirectories(item));
+        }
 
-       if (tempDirectory.Count == 0) break;
+        if (tempDirectory.Count == 0) break;
 
-       newDiectory.Clear();
-       newDiectory.AddRange(tempDirectory);
-       directories1.AddRange(tempDirectory);
-       tempDirectory.Clear();
-   }
+        newDiectory.Clear();
+        newDiectory.AddRange(tempDirectory);
+        directories1.AddRange(tempDirectory);
+        tempDirectory.Clear();
+    }
 
-   return directories1;
+    return directories1;
 }
 
 var allNames = new List<string>();
@@ -49,39 +49,75 @@ foreach (var file in Files)
 {
     var lines = File.ReadAllLines(file).ToList();
 
-    foreach (var line in lines)
+    foreach (var prevLine in lines)
     {
-        if(line.Replace(" ", "").Contains("[Display(Name=")){
-            var name = line.Split("\"")[1];
-            if(!allNames.Contains(name))
-            {
-                allNames.Add(name);
-            }
-        }
+        var line = prevLine.Trim();
+        while (true)
+        {
+            var findIndex = 0;
 
-        if(line.Contains("Localizer[\"")){
-            var slicedLine = line.Substring(line.IndexOf("Localizer[\"")).ToString();
-            var name = slicedLine.Split("\"")[1];
-            if(!allNames.Contains(name))
+            if (line.Replace(" ", "").Contains("[Display(Name="))
             {
-                allNames.Add(name);
-            }
-        }
+                var name = line.Split("\"")[1];
+                if (!allNames.Contains(name))
+                {
+                    allNames.Add(name);
+                }
 
-        if(line.Contains("[Permission(\"")){
-            var name = line.Split("\"")[1];
-            if(!allNames.Contains(name))
-            {
-                allNames.Add(name);
+                findIndex = line.IndexOf("[Display(Name=") + "[Display(Name=".Length;
             }
-        }
 
-        if(line.Contains("\"Error.") || line.Contains("\"Success.")){
-            var name = line.Split("\"")[1];
-            if(!allNames.Contains(name))
+            else if (line.Contains("Localizer[\""))
             {
-                allNames.Add(name);
+                var slicedLine = line.Substring(line.IndexOf("Localizer[\"")).ToString();
+                var name = slicedLine.Split("\"")[1];
+                if (!allNames.Contains(name))
+                {
+                    allNames.Add(name);
+                }
+
+                findIndex = line.IndexOf("Localizer[\"") + "Localizer[\"".Length;
             }
+
+            else if (line.Contains("[Permission(\""))
+            {
+                var name = line.Split("\"")[1];
+                if (!allNames.Contains(name))
+                {
+                    allNames.Add(name);
+                }
+
+                findIndex = line.IndexOf("[Permission(\"") + "[Permission(\"".Length;
+            }
+
+            else if (line.Contains("\"Error."))
+            {
+                var name = line.Split("\"")[1];
+                if (!allNames.Contains(name))
+                {
+                    allNames.Add(name);
+                }
+
+                findIndex = line.IndexOf("\"Error.") + "\"Error.".Length;
+            }
+
+            else if (line.Contains("\"Success."))
+            {
+                var name = line.Split("\"")[1];
+                if (!allNames.Contains(name))
+                {
+                    allNames.Add(name);
+                }
+
+                findIndex = line.IndexOf("\"Success.") + "\"Success.".Length;
+            }
+
+            else
+            {
+                break;
+            }
+
+            line = line.Substring(findIndex > 0 ? findIndex : 0).ToString();
         }
     }
 }
@@ -92,7 +128,7 @@ var ToInsertNames = new List<string>();
 
 foreach (var name in allNames.Where(n => !string.IsNullOrWhiteSpace(n)))
 {
-    if(!destinationFile.Any(line => line.ToLower().Contains($"<data name=\"{name.ToLower()}\"")))
+    if (!destinationFile.Any(line => line.ToLower().Contains($"<data name=\"{name.ToLower()}\"")))
     {
         ToInsertNames.Add(name);
     }
@@ -101,12 +137,12 @@ foreach (var name in allNames.Where(n => !string.IsNullOrWhiteSpace(n)))
 var nameValuePairs = ToInsertNames.Select(name =>
 {
     var originName = name;
-    if(name.Contains("Error.") || name.Contains("Success."))
+    if (name.Contains("Error.") || name.Contains("Success."))
     {
         name = name.Split(".")[1];
     }
 
-    if(name.Contains("ViewTitle."))
+    if (name.Contains("ViewTitle."))
     {
         name = name.Split(".").Last();
     }
