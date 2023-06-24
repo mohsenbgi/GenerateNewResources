@@ -79,6 +79,18 @@ foreach (var file in Files)
                 findIndex = line.IndexOf("Localizer[\"") + "Localizer[\"".Length;
             }
 
+            else if (line.Contains("localizer[\""))
+            {
+                var slicedLine = line.Substring(line.IndexOf("localizer[\"")).ToString();
+                var name = slicedLine.Split("\"")[1];
+                if (!allNames.Contains(name))
+                {
+                    allNames.Add(name);
+                }
+
+                findIndex = line.IndexOf("localizer[\"") + "localizer[\"".Length;
+            }
+
             else if (line.Contains("[Permission(\""))
             {
                 var name = line.Split("\"")[1];
