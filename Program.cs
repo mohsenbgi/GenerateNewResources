@@ -10,7 +10,7 @@ var Files = new List<string>();
 
 foreach (var d in directories1)
 {
-    Files.AddRange(Directory.GetFiles(d).Where(x => x.EndsWith(".cs") || x.EndsWith(".cshtml")));
+    Files.AddRange(Directory.GetFiles(d).Where(x => x.EndsWith(".cs") || x.EndsWith(".cshtml") || x.EndsWith(".js")));
 }
 
 List<string> GetDirectories(string path)
@@ -89,6 +89,18 @@ foreach (var file in Files)
                 }
 
                 findIndex = line.IndexOf("localizer[\"") + "localizer[\"".Length;
+            }
+
+            else if (line.Contains("getResource(\""))
+            {
+                var slicedLine = line.Substring(line.IndexOf("getResource(\"")).ToString();
+                var name = slicedLine.Split("\"")[1];
+                if (!allNames.Contains(name))
+                {
+                    allNames.Add(name);
+                }
+
+                findIndex = line.IndexOf("getResource(\"") + "getResource(\"".Length;
             }
 
             else if (line.Contains("[Permission(\""))
