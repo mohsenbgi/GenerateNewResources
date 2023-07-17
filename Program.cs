@@ -103,6 +103,18 @@ foreach (var file in Files)
                 findIndex = line.IndexOf("getResource(\"") + "getResource(\"".Length;
             }
 
+            else if (line.Contains("jsLocalizer(\""))
+            {
+                var slicedLine = line.Substring(line.IndexOf("jsLocalizer(\"")).ToString();
+                var name = slicedLine.Split("\"")[1];
+                if (!allNames.Contains(name))
+                {
+                    allNames.Add(name);
+                }
+
+                findIndex = line.IndexOf("jsLocalizer(\"") + "jsLocalizer(\"".Length;
+            }
+
             else if (line.Contains("[Permission(\""))
             {
                 var name = line.Split("\"")[1];
