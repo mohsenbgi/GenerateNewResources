@@ -148,6 +148,17 @@ foreach (var file in Files)
                 findIndex = line.IndexOf("\"Success.") + "\"Success.".Length;
             }
 
+            else if (file.Contains("PermissionsList.cs") && line.Contains("UniqueName") && line.Contains("="))
+            {
+                var name = line.Replace(" ", "").Split("\"")[1];
+                if (!allNames.Contains(name))
+                {
+                    allNames.Add(name);
+                }
+
+                findIndex = line.IndexOf("UniqueName") + "UniqueName".Length;
+            }
+
             else
             {
                 break;
